@@ -1,2 +1,2 @@
 # async_api
-small async application
+A small application that makes asynchronous api requests
