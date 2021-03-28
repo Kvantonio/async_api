@@ -20,10 +20,8 @@ async def first_api(session):
     return res
 
 
-async def second_api(session):
-    async with async_open('/home/kvantonio/hillel/async_api/keys.json', 'r', encoding='utf-8') as f:
-        data_key = await f.read()
-        data_key = json.loads(data_key)
+async def second_api(session, key=""):
+
     r = await session.request(method='GET',
         url='https://api.therainery.com/forecast',
         params={
@@ -32,7 +30,7 @@ async def second_api(session):
             'model': 'GFS_13',
         },
         headers={
-            'x-api-key': data_key['second']
+            'x-api-key': key
         }
     )
     res = []
@@ -47,25 +45,45 @@ async def second_api(session):
     return res
 
 
-async def third_api(session):
-    async with async_open('/home/kvantonio/hillel/async_api/keys.json', 'r', encoding='utf-8') as f:
-        data_key = await f.read()
-        data_key = json.loads(data_key)
-    key = data_key['third']
+async def third_api(session, key=""):
     api = 'https://api.weatherbit.io/v2.0/forecast/daily?city=Kharkiv&key='+key
     res = []
-
     r = await session.request(method='GET', url=api)
     data = await r.json(content_type=None)
     for i in range(7):
         res.append(data['data'][i]['temp'])
-    #print(res)
+    return res
+
+
+async def fourth_api(session):
+    api = 'https://api.met.no/weatherapi/locationforecast/2.0/compact.json?lat=49.988358&lon=36.232845'
+    headers = {
+        'User-Agent': 'Mozilla/5.0(X11;Ubuntu;Linuxx86_64;rv: 87.0)Gecko/20100101Firefox/87.0'
+    }
+    r = await session.request(method='GET', url=api, headers=headers)
+    data = await r.json(content_type=None)
+    hours_in_day = 24
+    time = 0
+    res = []
+    while time <= 84:
+        if time >= 60:
+            hours_in_day = 4
+        res.append(data['properties']['timeseries'][time]['data']['instant']['details']['air_temperature'])
+        time += hours_in_day
     return res
 
 
 async def main():
     async with aiohttp.ClientSession() as session:
-        p = await asyncio.gather(first_api(session), second_api(session), third_api(session))
+        async with async_open(os.path.dirname(os.path.abspath(__file__)) +'/keys.json', 'r', encoding='utf-8') as f:
+            data_key = await f.read()
+        data_key = json.loads(data_key)
+        p = await asyncio.gather(
+            first_api(session),
+            second_api(session, data_key['second']),
+            third_api(session, data_key['third']),
+            fourth_api(session)
+        )
         res = [round(sum(val)/len(p), 1)for val in zip(*p)]
         print(res)
 
@@ -74,7 +92,6 @@ if __name__ == '__main__':
     start = datetime.now()
     asyncio.run(main())
     print('Finished')
-
     print(datetime.now() - start)
 
 
