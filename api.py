@@ -1,8 +1,6 @@
-import json
-import os
 from datetime import datetime
-
 import requests
+import keys
 
 
 def first_api():
@@ -16,7 +14,7 @@ def first_api():
     return res
 
 
-def second_api(key):
+def second_api():
     r = requests.get(
         'https://api.therainery.com/forecast',
         params={
@@ -25,7 +23,7 @@ def second_api(key):
             'model': 'GFS_13',
         },
         headers={
-            'x-api-key': key
+            'x-api-key': keys.SECOND
         }
     )
     res = []
@@ -40,8 +38,8 @@ def second_api(key):
     return res
 
 
-def third_api(key):
-    api = 'https://api.weatherbit.io/v2.0/forecast/daily?city=Kharkiv&key=' + key
+def third_api():
+    api = 'https://api.weatherbit.io/v2.0/forecast/daily?city=Kharkiv&key=' + keys.THIRD
     res = []
     r = requests.get(api)
     data = r.json()
@@ -70,12 +68,9 @@ def fourth_api():
 
 if __name__ == '__main__':
     start = datetime.now()
-    with open(os.path.dirname(os.path.abspath(__file__)) +'/keys.json', 'r') as f:
-        data_key = json.loads(f.read())
-
     p = (first_api(),
-         # second_api(data_key['second']),
-         third_api(data_key['third']),
+         second_api(),
+         third_api(),
          fourth_api())
     res = [round(sum(val) / len(p), 1) for val in zip(*p)]
     print(res)

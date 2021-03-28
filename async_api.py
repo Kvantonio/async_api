@@ -1,26 +1,22 @@
 import asyncio
-import os
-
 import aiohttp
-from aiofile import async_open
-import json
 from datetime import datetime
+import keys
 
 
 async def first_api(session):
     api = 'http://www.7timer.info/bin/api.pl?lon=36.232845&lat=49.988358&product=civillight&output=json'
     r = await session.request(method='GET', url=api)
-    # print(r.text)
     res = []
     data = await r.json(content_type=None)
     for i in data['dataseries']:
         temp = i['temp2m']
         res.append((temp['max'] + temp['min']) / 2)
-    #print(res)
+
     return res
 
 
-async def second_api(session, key=""):
+async def second_api(session):
 
     r = await session.request(method='GET',
         url='https://api.therainery.com/forecast',
@@ -30,7 +26,7 @@ async def second_api(session, key=""):
             'model': 'GFS_13',
         },
         headers={
-            'x-api-key': key
+            'x-api-key': keys.SECOND
         }
     )
     res = []
@@ -42,11 +38,12 @@ async def second_api(session, key=""):
             hours_in_day = 8
         res.append(data['data'][time]['airTemperature'])
         time += hours_in_day
+
     return res
 
 
-async def third_api(session, key=""):
-    api = 'https://api.weatherbit.io/v2.0/forecast/daily?city=Kharkiv&key='+key
+async def third_api(session):
+    api = 'https://api.weatherbit.io/v2.0/forecast/daily?city=Kharkiv&key=' + keys.THIRD
     res = []
     r = await session.request(method='GET', url=api)
     data = await r.json(content_type=None)
@@ -58,7 +55,7 @@ async def third_api(session, key=""):
 async def fourth_api(session):
     api = 'https://api.met.no/weatherapi/locationforecast/2.0/compact.json?lat=49.988358&lon=36.232845'
     headers = {
-        'User-Agent': 'Mozilla/5.0(X11;Ubuntu;Linuxx86_64;rv: 87.0)Gecko/20100101Firefox/87.0'
+        'User-Agent': 'Mozilla/5.0(X11;Ubuntu;Linuxx86_64;rv:87.0)Gecko/20100101Firefox/87.0'
     }
     r = await session.request(method='GET', url=api, headers=headers)
     data = await r.json(content_type=None)
@@ -75,13 +72,10 @@ async def fourth_api(session):
 
 async def main():
     async with aiohttp.ClientSession() as session:
-        async with async_open(os.path.dirname(os.path.abspath(__file__)) +'/keys.json', 'r', encoding='utf-8') as f:
-            data_key = await f.read()
-        data_key = json.loads(data_key)
         p = await asyncio.gather(
             first_api(session),
-            second_api(session, data_key['second']),
-            third_api(session, data_key['third']),
+            second_api(session),
+            third_api(session),
             fourth_api(session)
         )
         res = [round(sum(val)/len(p), 1)for val in zip(*p)]
