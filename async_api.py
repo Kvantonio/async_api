@@ -17,7 +17,6 @@ async def first_api(session):
 
 
 async def second_api(session):
-
     r = await session.request(method='GET',
         url='https://api.therainery.com/forecast',
         params={
@@ -74,7 +73,7 @@ async def main():
     async with aiohttp.ClientSession() as session:
         p = await asyncio.gather(
             first_api(session),
-            second_api(session),
+            # second_api(session),
             third_api(session),
             fourth_api(session)
         )
