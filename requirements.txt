@@ -2,13 +2,14 @@ aiofile==3.5.0
 aiohttp==3.7.4.post0
 async-timeout==3.0.1
 attrs==20.3.0
-beautifulsoup4==4.7.1
 caio==0.8.0
 certifi==2019.3.9
 chardet==3.0.4
 idna==2.8
 multidict==5.1.0
+python-dateutil==2.8.1
 requests==2.21.0
+six==1.15.0
 soupsieve==1.8
 termcolor==1.1.0
 typing-extensions==3.7.4.3

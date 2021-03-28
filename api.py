@@ -69,7 +69,7 @@ def fourth_api():
 if __name__ == '__main__':
     start = datetime.now()
     p = (first_api(),
-         # second_api(),
+         second_api(),
          third_api(),
          fourth_api())
     res = [round(sum(val) / len(p), 1) for val in zip(*p)]
